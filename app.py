@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # Załaduj zmienne środowiskowe z pliku .env (upewnij się, że plik .env znajduje się w tym samym katalogu co app.py)
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # Ustawienie kluczy i haseł – pobierane z .env
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
