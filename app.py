@@ -1,4 +1,3 @@
-# app.py
 import os
 import datetime
 import smtplib
@@ -16,90 +15,86 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-# Możesz dodać również zmienną NOTIFY_EMAIL, na którą mają trafiać powiadomienia
+# Jeśli chcesz, możesz ustawić osobny adres dla powiadomień, w przeciwnym razie domyślnie użyje MAIL_USERNAME
 NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", MAIL_USERNAME)
 
-# Treści prezentujące ofertę, cennik i usługi – z odstępami dla lepszej czytelności
+# Nowe informacje o ofercie
 services_info = (
-    "Naszą misją jest wsparcie Twojej firmy za pomocą nowoczesnych chatbotów, które pomogą:\n\n"
-    "- Zautomatyzować obsługę klienta\n"
-    "- Usprawnić sprzedaż\n"
-    "- Poprawić komunikację z odbiorcami\n\n"
-    "Dlaczego warto współpracować z BiznesBot.pl?\n\n"
-    "- Profesjonalizm: 20 lat doświadczenia w technologii komputerowej\n"
-    "- Nowoczesność: Modne i skuteczne rozwiązania technologiczne\n"
-    "- Indywidualne podejście: Dopasowujemy projekty do potrzeb każdego klienta\n"
-    "- Oszczędność czasu: Chatboty Twoi klienci zawsze mają wsparcie – 24/7\n\n"
-    "Oferta chatbotów AI:\n\n"
-    "1. Gabinety Lekarskie:\n"
-    "   - Subskrypcja: 299 zł/mies.\n"
-    "   - Jednorazowo: 2999 zł + wsparcie 150 zł/mies.\n"
-    "   Bot odpowiada na FAQ, podaje godziny otwarcia i dostępność lekarzy; zaleca kontakt telefoniczny w celu rezerwacji.\n\n"
-    "2. Fryzjerzy:\n"
-    "   - Subskrypcja: 199 zł/mies.\n"
-    "   - Jednorazowo: 1999 zł + wsparcie 100 zł/mies.\n"
-    "   Bot odpowiada na FAQ, podaje godziny otwarcia i cennik; rekomenduje kontakt telefoniczny w celu umówienia wizyty.\n\n"
-    "3. Kosmetyczki:\n"
-    "   - Subskrypcja: 249 zł/mies.\n"
-    "   - Jednorazowo: 2499 zł + wsparcie 120 zł/mies.\n"
-    "   Bot odpowiada na FAQ, prezentuje cennik i dostępne terminy; poleca kontakt telefoniczny do rezerwacji.\n\n"
-    "4. Firmy budowlane:\n"
-    "   - Subskrypcja: 299 zł/mies.\n"
-    "   - Jednorazowo: 2999 zł + wsparcie 150 zł/mies.\n"
-    "   Bot odpowiada na FAQ, podaje godziny pracy i ofertę; sugeruje kontakt telefoniczny dla szczegółowych informacji.\n\n"
-    "5. Instalatorzy klimatyzacji i pomp ciepła:\n"
-    "   - Subskrypcja: 299 zł/mies.\n"
-    "   - Jednorazowo: 2999 zł + wsparcie 150 zł/mies.\n"
-    "   Bot odpowiada na FAQ, informuje o ofercie i dostępności usług; zaleca telefoniczne umówienie wizyty technika.\n\n"
-    "6. Mechanicy samochodowi:\n"
-    "   - Subskrypcja: 199 zł/mies.\n"
-    "   - Jednorazowo: 1999 zł + wsparcie 100 zł/mies.\n"
-    "   Bot odpowiada na FAQ, podaje godziny otwarcia i informacje o usługach; zachęca do kontaktu telefonicznego."
+    "Asystenci AI czyli Chatboty\n\n"
+    "🚀 Pakiet Podstawowy – 990 zł / rok (jednorazowa płatność)\n"
+    "✅ Chatbot odpowiadający na 10-15 pytań FAQ.\n"
+    "✅ Powiadomienia e-mail o pytaniach klientów.\n"
+    "✅ Hosting na stabilnym serwerze (Render bez usypiania) w cenie.\n"
+    "✅ Podstawowe wsparcie techniczne.\n\n"
+    "📌 Pakiet Podstawowy – 500 zł jednorazowo + 50 zł/miesiąc\n"
+    "✅ Chatbot odpowiadający na 10-15 pytań FAQ.\n"
+    "✅ Powiadomienia e-mail o pytaniach klientów.\n"
+    "✅ Hosting na stabilnym serwerze (Render bez usypiania).\n"
+    "✅ Podstawowe wsparcie techniczne.\n\n"
+    "💼 Pakiet Rozszerzony – 1490 zł / rok (jednorazowa płatność)\n"
+    "✅ Wszystko z Pakietu Podstawowego + więcej funkcji:\n"
+    "✅ Chatbot odpowiada na 20-30 pytań FAQ.\n"
+    "✅ Możliwość edycji odpowiedzi na życzenie (2 zmiany rocznie).\n"
+    "✅ Statystyki i analiza zapytań klientów.\n"
+    "✅ Priorytetowa pomoc techniczna.\n\n"
+    "📌 Pakiet Rozszerzony – 800 zł jednorazowo + 100 zł/miesiąc\n"
+    "✅ Wszystko z Pakietu Podstawowego + więcej funkcji:\n"
+    "✅ Chatbot odpowiada na 20-30 pytań FAQ.\n"
+    "✅ Możliwość edycji odpowiedzi na życzenie (2 zmiany rocznie).\n"
+    "✅ Statystyki i analiza zapytań klientów.\n"
+    "✅ Priorytetowa pomoc techniczna.\n\n"
+    "Wybierz opcję wygodną dla siebie – miesięczna subskrypcja lub jednorazowa opłata za rok!\n\n"
+    "--------------------------------------\n\n"
+    "Strony Internetowe\n\n"
+    "📌 Pakiet Podstawowy – 990 zł / rok\n"
+    "✅ Rejestracja domeny i konfiguracja hostingu.\n"
+    "✅ Instalacja WordPressa i podstawowych wtyczek.\n"
+    "✅ Szablon dostosowany do branży klienta.\n"
+    "✅ 3-5 podstron (np. Strona główna, O nas, Oferta, Kontakt, Galeria).\n"
+    "✅ Podstawowa optymalizacja SEO.\n"
+    "✅ Responsywność (strona dobrze wygląda na telefonach).\n"
+    "✅ Hosting + domena w cenie.\n\n"
+    "📌 Pakiet Rozszerzony – 1490 zł / rok\n"
+    "✅ Wszystko z Pakietu Podstawowego + więcej funkcji:\n"
+    "✅ Rozbudowany szablon i personalizacja.\n"
+    "✅ Do 10 podstron.\n"
+    "✅ Blog lub sekcja aktualności.\n"
+    "✅ Formularz kontaktowy + integracja z Google Maps.\n"
+    "✅ Dodatkowa optymalizacja SEO (meta tagi, sitemap).\n"
+    "✅ Możliwość wprowadzenia 2 zmian rocznie na stronie.\n"
+    "✅ Hosting + domena w cenie.\n\n"
+    "--------------------------------------\n\n"
+    "🎨 Logo i Banery\n"
+    "✅ Projektowanie logo – od 300 zł.\n"
+    "✅ Banery na strony internetowe – od 150 zł.\n\n"
+    "🎓 Szkolenia IT\n"
+    "✅ Szkolenia dla seniorów (obsługa komputera, internet, bezpieczeństwo online, poczta e-mail, podstawy social media).\n"
+    "✅ Szkolenia dla młodych (programowanie, AI, obsługa narzędzi cyfrowych).\n"
+    "✅ Cena: od 100 zł za godzinę.\n"
 )
 
 pricing_info = (
     "Oferty Chatbotów AI:\n\n"
-    "1. Gabinety Lekarskie:\n"
-    "   - Subskrypcja: 299 zł/mies.\n"
-    "   - Jednorazowo: 2999 zł + wsparcie 150 zł/mies.\n\n"
-    "2. Fryzjerzy:\n"
-    "   - Subskrypcja: 199 zł/mies.\n"
-    "   - Jednorazowo: 1999 zł + wsparcie 100 zł/mies.\n\n"
-    "3. Kosmetyczki:\n"
-    "   - Subskrypcja: 249 zł/mies.\n"
-    "   - Jednorazowo: 2499 zł + wsparcie 120 zł/mies.\n\n"
-    "4. Firmy budowlane:\n"
-    "   - Subskrypcja: 299 zł/mies.\n"
-    "   - Jednorazowo: 2999 zł + wsparcie 150 zł/mies.\n\n"
-    "5. Instalatorzy klimatyzacji i pomp ciepła:\n"
-    "   - Subskrypcja: 299 zł/mies.\n"
-    "   - Jednorazowo: 2999 zł + wsparcie 150 zł/mies.\n\n"
-    "6. Mechanicy samochodowi:\n"
-    "   - Subskrypcja: 199 zł/mies.\n"
-    "   - Jednorazowo: 1999 zł + wsparcie 100 zł/mies."
+    "Pakiet Podstawowy – 990 zł / rok lub 500 zł jednorazowo + 50 zł/miesiąc.\n\n"
+    "Pakiet Rozszerzony – 1490 zł / rok lub 800 zł jednorazowo + 100 zł/miesiąc.\n\n"
 )
 
 website_services_pricing = (
-    "Cennik usług BiznesBot.pl:\n\n"
-    "1. Tworzenie stron internetowych:\n"
-    "   • Strona wizytówka (1-3 podstrony, kontakt, proste informacje) – 800 - 1200 zł\n"
-    "   • Rozbudowana strona firmowa (4-6 podstrony, formularz kontaktowy, podstawowe SEO) – 1500 - 2500 zł\n"
-    "   • Strona z blogiem lub aktualnościami – 2000 - 3000 zł\n"
-    "   • Obsługa i aktualizacja strony (miesięcznie) – od 100 zł\n"
-    "   • Hosting i domena (roczny koszt, opcjonalnie) – od 100 zł\n\n"
-    "2. Tworzenie grafiki na strony internetowe:\n"
-    "   • Baner na stronę internetową – 150 - 400 zł\n"
-    "   • Logo dla firmy – 300 - 800 zł\n"
-    "   • Kompletny branding (logo, kolorystyka, 3-5 grafik do strony) – 1000 - 2000 zł\n\n"
-    "3. Szkolenia IT:\n"
-    "   • Szkolenie dla seniorów (obsługa komputera, internetu, bezpieczeństwo online, poczta e-mail, podstawy social media)\n"
-    "       ◦ 1h – 100 zł\n"
-    "       ◦ Pakiet 5h – 450 zł\n"
-    "       ◦ Pakiet 10h – 800 zł\n\n"
-    "   • Szkolenie dla młodych (programowanie, AI, obsługa narzędzi cyfrowych, strony internetowe, podstawy grafiki komputerowej)\n"
-    "       ◦ 1h – 120 zł\n"
-    "       ◦ Pakiet 5h – 550 zł\n"
-    "       ◦ Pakiet 10h – 1000 zł"
+    "Cennik Stron Internetowych:\n\n"
+    "Pakiet Podstawowy – 990 zł / rok\n"
+    "✅ Rejestracja domeny i konfiguracja hostingu.\n"
+    "✅ Instalacja WordPressa i podstawowych wtyczek.\n"
+    "✅ Szablon dostosowany do branży klienta (3-5 podstron).\n"
+    "✅ Podstawowa optymalizacja SEO.\n"
+    "✅ Responsywność.\n"
+    "✅ Hosting + domena w cenie.\n\n"
+    "Pakiet Rozszerzony – 1490 zł / rok\n"
+    "✅ Rozbudowany szablon i personalizacja.\n"
+    "✅ Do 10 podstron, blog lub sekcja aktualności.\n"
+    "✅ Formularz kontaktowy + integracja z Google Maps.\n"
+    "✅ Dodatkowa optymalizacja SEO (meta tagi, sitemap).\n"
+    "✅ Możliwość wprowadzenia 2 zmian rocznie.\n"
+    "✅ Hosting + domena w cenie.\n"
 )
 
 def is_business_hours():
@@ -112,8 +107,8 @@ def is_business_hours():
 def get_bot_response(user_input):
     """Generuje odpowiedź chatbota na podstawie wpisanego tekstu."""
     lower_input = user_input.lower().strip()
-    
-    # Odpowiedzi na pytania o kontakt – priorytetowe sprawdzenie:
+
+    # Odpowiedzi na pytania o kontakt
     if "podaj" in lower_input and "email" in lower_input:
         return "Nasz email to: kontakt@biznesbot.pl"
     if "podaj" in lower_input and ("telefon" in lower_input or "numer" in lower_input):
@@ -127,14 +122,22 @@ def get_bot_response(user_input):
     greetings = ["witaj", "hej", "cześć", "czesc", "dzień dobry", "mam pytanie"]
     if any(word in lower_input for word in greetings):
         return ("Witam! Jak mogę Ci pomóc?\n\n"
-                "Nasze rozwiązania oparte na AI poprawiają efektywność obsługi klienta, zwiększają sprzedaż i budują pozytywny wizerunek marki.")
+                "Zapytaj o nasze chatboty, strony internetowe, szkolenia IT, logo lub banery.")
     
-    # Sprawdzenie, czy zapytanie dotyczy oferty – wychwytujemy "ofert" (bez względu na końcówkę)
-    if "ofert" in lower_input:
+    # Informacje o usługach
+    if "chatbot" in lower_input or "asystent" in lower_input or "ai" in lower_input:
         return services_info
-    elif "cennik" in lower_input:
-        return pricing_info + "\n\n" + website_services_pricing
-    elif any(kw in lower_input for kw in ["kontakt", "działacie", "skontaktować"]):
+    if "strona" in lower_input or "wordp" in lower_input:
+        return website_services_pricing
+    if "szkolenie" in lower_input:
+        return "Oferujemy szkolenia IT od 100 zł za godzinę. Więcej informacji na BiznesBot.pl."
+    if "logo" in lower_input or "baner" in lower_input:
+        return "Projektujemy logo od 300 zł i banery od 150 zł. Skontaktuj się z nami!"
+    if "cennik" in lower_input:
+        return pricing_info
+    
+    # Kontakt – jeśli zapytanie dotyczy kontaktu
+    if any(kw in lower_input for kw in ["kontakt", "działacie", "skontaktować"]):
         if is_business_hours():
             return "Działamy od 8:00 do 16:00. Proszę dzwonić: 725 777 393."
         else:
@@ -144,10 +147,10 @@ def get_bot_response(user_input):
             send_email_notification(subject, email_message, "kacperskiszymon@gmail.com")
             return ("Jesteśmy poza godzinami pracy.\n\n"
                     "Proszę podać swój adres email lub numer telefonu, abyśmy mogli się z Tobą skontaktować.")
-    else:
-        return ("Dziękujemy za Twoją wiadomość!\n\n"
-                "Nasze zaawansowane rozwiązania AI pomagają zoptymalizować obsługę klienta, zwiększyć sprzedaż oraz budować silną markę.\n\n"
-                "Zachęcam do zadawania pytań o naszą ofertę lub cennik, albo do uzyskania dodatkowych informacji.")
+    
+    # Domyślna odpowiedź
+    return ("Dziękujemy za Twoją wiadomość!\n\n"
+            "Zapoznaj się z naszą ofertą chatbotów, stron internetowych, szkoleń IT oraz usług graficznych na BiznesBot.pl.")
 
 def send_email_notification(subject, message, recipient):
     """
