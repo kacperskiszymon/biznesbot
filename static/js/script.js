@@ -3,10 +3,8 @@ $(document).ready(function() {
         e.preventDefault();
         var message = $("#message").val().trim();
         if (message === "") return;
-
         $("#chatbox").append("<p><strong>Ty:</strong> " + message + "</p>");
         $("#message").val("");
-
         $.post("/ask", { message: message }, function(data) {
             $("#chatbox").append("<p><strong>BiznesBot:</strong> " + data.response + "</p>");
             $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
