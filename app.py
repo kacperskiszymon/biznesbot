@@ -7,9 +7,6 @@ from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import openai
 
-# Upewnij się, że w requirements.txt masz:
-# openai==0.28
-
 # Konfiguracja logowania (DEBUG – dla diagnostyki)
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -116,6 +113,10 @@ def get_bot_response(user_input):
     """Generuje odpowiedź chatbota na podstawie wpisanego tekstu."""
     lower_input = user_input.lower().strip()
 
+    # Obsługa prostych odpowiedzi – przykładowo:
+    if lower_input == "super":
+        return "Cieszę się, że mogłem pomóc!"
+    
     # Odpowiedzi na pytania o kontakt
     if "podaj" in lower_input and "email" in lower_input:
         return "Nasz email to: kontakt@biznesbot.pl"
@@ -176,7 +177,11 @@ def get_bot_response(user_input):
         return response.choices[0].message.content.strip()
     except Exception as e:
         logging.error("Błąd przy generowaniu odpowiedzi z OpenAI: %s", e)
-        return "Przepraszam, wystąpił błąd. Spróbuj ponownie później."
+        # Jeśli quota została przekroczona lub inny błąd, zwróć fallback
+        if "exceeded your current quota" in str(e).lower():
+            return "Przepraszam, chwilowo wystąpił problem z generowaniem odpowiedzi. Proszę spróbować ponownie później."
+        else:
+            return "Przepraszam, wystąpił błąd. Spróbuj ponownie później."
 
 def send_email_notification(subject, message, recipient):
     """
