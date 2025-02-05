@@ -4,8 +4,9 @@ import smtplib
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+import openai  # Dodajemy import biblioteki OpenAI
 
-# Załaduj zmienne środowiskowe z pliku .env (upewnij się, że plik .env znajduje się w tym samym katalogu co app.py)
+# Załaduj zmienne środowiskowe z pliku .env
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -15,8 +16,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
-# Jeśli chcesz, możesz ustawić osobny adres dla powiadomień, w przeciwnym razie domyślnie użyje MAIL_USERNAME
 NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", MAIL_USERNAME)
+
+# Ustawienie klucza API OpenAI
+openai.api_key = OPENAI_API_KEY
 
 # Nowe informacje o ofercie
 services_info = (
@@ -55,10 +58,8 @@ services_info = (
     "✅ Responsywność (strona dobrze wygląda na telefonach).\n"
     "✅ Hosting + domena w cenie.\n\n"
     "📌 Pakiet Rozszerzony – 1490 zł / rok\n"
-    "✅ Wszystko z Pakietu Podstawowego + więcej funkcji:\n"
     "✅ Rozbudowany szablon i personalizacja.\n"
-    "✅ Do 10 podstron.\n"
-    "✅ Blog lub sekcja aktualności.\n"
+    "✅ Do 10 podstron, blog lub sekcja aktualności.\n"
     "✅ Formularz kontaktowy + integracja z Google Maps.\n"
     "✅ Dodatkowa optymalizacja SEO (meta tagi, sitemap).\n"
     "✅ Możliwość wprowadzenia 2 zmian rocznie na stronie.\n"
@@ -118,13 +119,13 @@ def get_bot_response(user_input):
     if "jaki jest wasz numer" in lower_input:
         return "Nasz numer to: 725 777 393"
     
-    # Proste powitania
+    # Powitania
     greetings = ["witaj", "hej", "cześć", "czesc", "dzień dobry", "mam pytanie"]
     if any(word in lower_input for word in greetings):
         return ("Witam! Jak mogę Ci pomóc?\n\n"
                 "Zapytaj o nasze chatboty, strony internetowe, szkolenia IT, logo lub banery.")
     
-    # Informacje o usługach
+    # Informacje o usługach – wybieramy tylko wybrane kategorie
     if "chatbot" in lower_input or "asystent" in lower_input or "ai" in lower_input:
         return services_info
     if "strona" in lower_input or "wordp" in lower_input:
@@ -135,7 +136,7 @@ def get_bot_response(user_input):
         return "Projektujemy logo od 300 zł i banery od 150 zł. Skontaktuj się z nami!"
     if "cennik" in lower_input:
         return pricing_info
-    
+
     # Kontakt – jeśli zapytanie dotyczy kontaktu
     if any(kw in lower_input for kw in ["kontakt", "działacie", "skontaktować"]):
         if is_business_hours():
@@ -148,9 +149,24 @@ def get_bot_response(user_input):
             return ("Jesteśmy poza godzinami pracy.\n\n"
                     "Proszę podać swój adres email lub numer telefonu, abyśmy mogli się z Tobą skontaktować.")
     
-    # Domyślna odpowiedź
-    return ("Dziękujemy za Twoją wiadomość!\n\n"
-            "Zapoznaj się z naszą ofertą chatbotów, stron internetowych, szkoleń IT oraz usług graficznych na BiznesBot.pl.")
+    # Domyślna odpowiedź – użyjemy OpenAI dla bardziej "inteligentnej" odpowiedzi
+    try:
+        # Wywołanie OpenAI Chat API dla dynamicznej odpowiedzi
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": (
+                    "Jesteś chatbotem BiznesBot. Twoim zadaniem jest profesjonalne i przekonujące prezentowanie oferty firmy, "
+                    "która oferuje chatboty, strony internetowe, szkolenia IT oraz projektowanie logo i banerów. "
+                    "Twoje odpowiedzi powinny być pomocne, nakierowywać klienta do skorzystania z usług i budować pozytywny wizerunek firmy."
+                )},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print("Błąd przy generowaniu odpowiedzi z OpenAI:", e)
+        return "Przepraszam, wystąpił błąd. Spróbuj ponownie później."
 
 def send_email_notification(subject, message, recipient):
     """
