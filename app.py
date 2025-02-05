@@ -4,21 +4,25 @@ import smtplib
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
-import openai  # Dodajemy import biblioteki OpenAI
+import openai
+import logging
+
+# Konfiguracja logowania – ustaw poziom DEBUG, aby widzieć wszystkie komunikaty w konsoli
+logging.basicConfig(level=logging.DEBUG)
 
 # Załaduj zmienne środowiskowe z pliku .env
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
-# Ustawienie kluczy i haseł – pobierane z .env
+# Ustawienia – pobierane z pliku .env
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", MAIL_USERNAME)
 
-# Ustawienie klucza API OpenAI
+# Ustaw klucz API dla OpenAI
 openai.api_key = OPENAI_API_KEY
 
 # Nowe informacje o ofercie
@@ -125,7 +129,7 @@ def get_bot_response(user_input):
         return ("Witam! Jak mogę Ci pomóc?\n\n"
                 "Zapytaj o nasze chatboty, strony internetowe, szkolenia IT, logo lub banery.")
     
-    # Informacje o usługach – wybieramy tylko wybrane kategorie
+    # Informacje o usługach
     if "chatbot" in lower_input or "asystent" in lower_input or "ai" in lower_input:
         return services_info
     if "strona" in lower_input or "wordp" in lower_input:
@@ -149,23 +153,22 @@ def get_bot_response(user_input):
             return ("Jesteśmy poza godzinami pracy.\n\n"
                     "Proszę podać swój adres email lub numer telefonu, abyśmy mogli się z Tobą skontaktować.")
     
-    # Domyślna odpowiedź – użyjemy OpenAI dla bardziej "inteligentnej" odpowiedzi
+    # Domyślna odpowiedź – jeśli nie znaleziono dopasowania, generujemy odpowiedź za pomocą OpenAI
     try:
-        # Wywołanie OpenAI Chat API dla dynamicznej odpowiedzi
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": (
                     "Jesteś chatbotem BiznesBot. Twoim zadaniem jest profesjonalne i przekonujące prezentowanie oferty firmy, "
                     "która oferuje chatboty, strony internetowe, szkolenia IT oraz projektowanie logo i banerów. "
-                    "Twoje odpowiedzi powinny być pomocne, nakierowywać klienta do skorzystania z usług i budować pozytywny wizerunek firmy."
+                    "Twoje odpowiedzi mają nakierowywać klienta do skorzystania z usług i budować pozytywny wizerunek firmy."
                 )},
                 {"role": "user", "content": user_input}
             ]
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print("Błąd przy generowaniu odpowiedzi z OpenAI:", e)
+        logging.error("Błąd przy generowaniu odpowiedzi z OpenAI: %s", e)
         return "Przepraszam, wystąpił błąd. Spróbuj ponownie później."
 
 def send_email_notification(subject, message, recipient):
@@ -189,10 +192,10 @@ def send_email_notification(subject, message, recipient):
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, [recipient], msg.as_string())
         server.quit()
-        print("Wiadomość e-mail wysłana pomyślnie.")
+        logging.info("Wiadomość e-mail wysłana pomyślnie.")
         return True
     except Exception as e:
-        print("Błąd przy wysyłaniu e-maila:", e)
+        logging.error("Błąd przy wysyłaniu e-maila: %s", e)
         return False
 
 @app.route("/")
