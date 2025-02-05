@@ -7,8 +7,11 @@ from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import openai
 
+# Upewnij się, że w requirements.txt masz:
+# openai==0.28
+
 # Konfiguracja logowania (DEBUG – dla diagnostyki)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Załaduj zmienne środowiskowe z pliku .env
 load_dotenv()
@@ -218,4 +221,4 @@ def ask():
     return jsonify({"response": bot_response})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
