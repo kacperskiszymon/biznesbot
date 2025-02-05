@@ -1,13 +1,13 @@
 import os
 import datetime
 import smtplib
+import logging
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import openai
-import logging
 
-# Konfiguracja logowania – ustaw poziom DEBUG, aby widzieć wszystkie komunikaty w konsoli
+# Konfiguracja logowania (DEBUG – dla diagnostyki)
 logging.basicConfig(level=logging.DEBUG)
 
 # Załaduj zmienne środowiskowe z pliku .env
@@ -129,7 +129,11 @@ def get_bot_response(user_input):
         return ("Witam! Jak mogę Ci pomóc?\n\n"
                 "Zapytaj o nasze chatboty, strony internetowe, szkolenia IT, logo lub banery.")
     
-    # Informacje o usługach
+    # Jeśli w zapytaniu pojawia się "oferta", zwróć ofertę
+    if "oferta" in lower_input:
+        return services_info
+
+    # Informacje o usługach na podstawie słów kluczowych
     if "chatbot" in lower_input or "asystent" in lower_input or "ai" in lower_input:
         return services_info
     if "strona" in lower_input or "wordp" in lower_input:
@@ -153,7 +157,7 @@ def get_bot_response(user_input):
             return ("Jesteśmy poza godzinami pracy.\n\n"
                     "Proszę podać swój adres email lub numer telefonu, abyśmy mogli się z Tobą skontaktować.")
     
-    # Domyślna odpowiedź – jeśli nie znaleziono dopasowania, generujemy odpowiedź za pomocą OpenAI
+    # Jeśli żaden warunek nie pasuje, spróbuj wygenerować dynamiczną odpowiedź z OpenAI
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
