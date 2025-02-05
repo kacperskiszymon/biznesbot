@@ -6,11 +6,114 @@
     <title>BiznesBot - Chatbot</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Loader (spinner) */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Chat container */
+        #chat-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 400px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        /* Chat header */
+        #chat-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        #chat-header img {
+            height: 24px;
+            margin-right: 5px;
+        }
+        #chat-header button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Chat box */
+        #chatbox {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: white;  /* Białe tło */
+            white-space: pre-line; /* Zachowuje nowe linie */
+        }
+        /* Chat form */
+        #chat-form {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+        #message {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button[type="submit"] {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <div id="chat-container">
+    <!-- Loader overlay -->
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Chat container -->
+    <div id="chat-container" style="display: none;">
         <div id="chat-header">
-            <span>💬 BiznesBot</span>
+            <div style="display: flex; align-items: center;">
+                <img src="/static/ikonka.png" alt="BiznesBot Logo">
+                <span>BiznesBot</span>
+            </div>
             <button id="chat-toggle">X</button>
         </div>
         <div id="chatbox"></div>
@@ -21,5 +124,13 @@
     </div>
 
     <script src="/static/js/script.js"></script>
+    <script>
+        $(document).ready(function(){
+            // Po załadowaniu dokumentu ukryj loader i pokaż chat container
+            $("#loader").fadeOut("slow", function(){
+                $("#chat-container").fadeIn("slow");
+            });
+        });
+    </script>
 </body>
 </html>
