@@ -2,6 +2,7 @@ import os
 import datetime
 import smtplib
 import logging
+import json
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
@@ -25,7 +26,28 @@ NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", MAIL_USERNAME)
 # Ustaw klucz API dla OpenAI
 openai.api_key = OPENAI_API_KEY
 
-# Definicje zmiennych z informacjami o ofercie
+# Funkcja ładująca FAQ z zewnętrznego pliku faq.json
+def load_faq():
+    try:
+        with open("faq.json", "r", encoding="utf-8") as f:
+            faq_data = json.load(f)
+        logging.info("FAQ załadowane pomyślnie.")
+        return faq_data
+    except Exception as e:
+        logging.error("Błąd podczas ładowania FAQ: %s", e)
+        return {}
+
+# Załaduj FAQ do zmiennej FAQ
+FAQ = load_faq()
+
+# Funkcja wyszukująca FAQ – iteruje po słowniku FAQ i zwraca odpowiedź, jeśli znajdzie dopasowanie
+def get_faq_response(user_input):
+    for key, answer in FAQ.items():
+        if key in user_input.lower():
+            return answer
+    return None
+
+# Definicje statycznych informacji (fallback)
 services_info = (
     "Asystenci AI czyli Chatboty\n\n"
     "🚀 Pakiet Podstawowy – 990 zł / rok (jednorazowa płatność)\n"
@@ -102,44 +124,6 @@ website_services_pricing = (
     "✅ Hosting + domena w cenie.\n"
 )
 
-# Funkcja wyszukująca FAQ
-def get_faq_response(user_input):
-    FAQ = {
-        "czym są chatboty": "Chatboty AI to inteligentni asystenci, którzy automatyzują obsługę klienta i wspierają sprzedaż, działając 24/7.",
-        "jakie pakiety chatbotów": (
-            "Oferujemy dwa pakiety:\n"
-            "• Pakiet Podstawowy: 990 zł/rok (lub 500 zł + 50 zł/miesiąc) – Chatbot FAQ, powiadomienia, hosting, wsparcie.\n"
-            "• Pakiet Rozszerzony: 1490 zł/rok (lub 800 zł + 100 zł/miesiąc) – Więcej pytań FAQ, edycja treści, statystyki, priorytetowe wsparcie."
-        ),
-        "czym różnią się opcje płatności": (
-            "W opcji jednorazowej płacisz stałą roczną kwotę (990 zł lub 1490 zł). W opcji abonamentowej płacisz jednorazowo (500 zł lub 800 zł) i dodatkowo 50 zł lub 100 zł miesięcznie."
-        ),
-        "jakie funkcje posiada pakiet rozszerzony": (
-            "Pakiet Rozszerzony oferuje obsługę 20-30 pytań FAQ, możliwość edycji treści (2 zmiany rocznie), dostęp do statystyk oraz priorytetowe wsparcie techniczne."
-        ),
-        "czy mogę zmieniać treść pytań": "Tak, w ramach Pakietu Rozszerzonego możesz modyfikować treść pytań według potrzeb Twojej firmy.",
-        "jakie są zalety chatbotów": "Chatboty zapewniają stałą dostępność wsparcia, automatyzują komunikację i wspierają sprzedaż.",
-        "jak działa proces wdrożenia": "Po wyborze pakietu konsultujemy Twoje potrzeby, konfigurujemy i testujemy chatbota, a następnie uruchamiamy rozwiązanie.",
-        "jakie usługi stron internetowych": (
-            "Oferujemy dwa pakiety stron internetowych:\n"
-            "• Pakiet Podstawowy: WordPress, 3-5 podstron, responsywność, SEO, hosting i domena w cenie.\n"
-            "• Pakiet Rozszerzony: Do 10 podstron, blog, formularz kontaktowy, Google Maps, zaawansowana optymalizacja SEO, hosting i domena w cenie."
-        ),
-        "dlaczego warto wybrać usługi": "Nasze usługi są proste, funkcjonalne i zoptymalizowane pod SEO, a my dbamy o indywidualne podejście.",
-        "czy w cenie strony znajduje się hosting": "Tak, hosting i domena są wliczone w cenę w obu pakietach.",
-        "ile trwa proces tworzenia strony": "Strona może być gotowa już w ciągu tygodnia, w zależności od specyfiki projektu.",
-        "czy oferujecie wsparcie techniczne": "Tak, zapewniamy wsparcie techniczne przy każdej ofercie.",
-        "jak mogę się skontaktować": "Napisz na kontakt@biznesbot.pl lub zadzwoń pod numer 725 777 393.",
-        "czy mogę zamówić dodatkowe usługi": "Oprócz stron i chatbotów oferujemy szkolenia IT oraz usługi graficzne (logo, banery).",
-        "jakie szkolenia oferujecie": "Oferujemy szkolenia IT dla początkujących i zaawansowanych, zaczynające się od 100 zł za godzinę.",
-        "dla kogo są szkolenia": "Nasze szkolenia są dostosowane zarówno do osób początkujących, jak i zaawansowanych.",
-        "jakie usługi graficzne": "Projektujemy logo od 300 zł oraz banery od 150 zł.",
-    }
-    for key, answer in FAQ.items():
-        if key in user_input.lower():
-            return answer
-    return None
-
 def is_business_hours():
     """Sprawdza, czy aktualny czas mieści się w godzinach pracy (8:00-16:00)."""
     now = datetime.datetime.now().time()
@@ -151,7 +135,7 @@ def get_bot_response(user_input):
     """Generuje odpowiedź chatbota na podstawie wpisanego tekstu."""
     lower_input = user_input.lower().strip()
 
-    # Proste odpowiedzi
+    # Obsługa prostych odpowiedzi
     if lower_input == "super":
         return "Cieszę się, że mogłem pomóc!"
 
@@ -198,8 +182,8 @@ def get_bot_response(user_input):
             send_email_notification(subject, email_message, "kacperskiszymon@gmail.com")
             return ("Jesteśmy poza godzinami pracy.\n\n"
                     "Proszę podać swój adres email lub numer telefonu, abyśmy mogli się z Tobą skontaktować.")
-
-    # Próba dopasowania FAQ
+    
+    # Próba dopasowania FAQ z zewnętrznego pliku
     faq_answer = get_faq_response(user_input)
     if faq_answer:
         return faq_answer
@@ -220,7 +204,7 @@ def get_bot_response(user_input):
         return response.choices[0].message.content.strip()
     except Exception as e:
         logging.error("Błąd przy generowaniu odpowiedzi z OpenAI: %s", e)
-        # Fallback, gdy dynamiczna odpowiedź nie zadziała
+        # Fallback, gdy dynamiczne generowanie nie zadziała
         if "exceeded your current quota" in str(e).lower():
             return "Przepraszam, chwilowo wystąpił problem z generowaniem odpowiedzi. Proszę spróbować ponownie później."
         else:
