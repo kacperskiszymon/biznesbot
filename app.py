@@ -23,6 +23,11 @@ MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 NOTIFY_EMAIL = os.getenv("NOTIFY_EMAIL", MAIL_USERNAME)
 
+# Sprawdzenie, czy klucz API OpenAI jest ustawiony
+if not OPENAI_API_KEY:
+    logging.error("Brak klucza API OpenAI! Upewnij się, że zmienna OPENAI_API_KEY jest ustawiona w pliku .env.")
+    raise ValueError("Brak klucza API OpenAI!")
+
 # Ustaw klucz API dla OpenAI
 openai.api_key = OPENAI_API_KEY
 
@@ -43,7 +48,8 @@ FAQ = load_faq()
 # Funkcja wyszukująca FAQ – iteruje po słowniku FAQ i zwraca odpowiedź, jeśli znajdzie dopasowanie
 def get_faq_response(user_input):
     for key, answer in FAQ.items():
-        if key in user_input.lower():
+        # Używamy lower() dla obu zmiennych, aby wyszukiwanie było bardziej elastyczne
+        if key.lower() in user_input.lower():
             return answer
     return None
 
@@ -219,6 +225,11 @@ def send_email_notification(subject, message, recipient):
     smtp_port = 587
     sender_email = MAIL_USERNAME
     sender_password = MAIL_PASSWORD
+
+    # Sprawdzenie, czy dane logowania do e-maila są ustawione
+    if not sender_email or not sender_password:
+        logging.warning("Brak danych logowania do e-maila. Powiadomienie nie zostało wysłane.")
+        return False
 
     msg = MIMEText(message)
     msg["Subject"] = subject
