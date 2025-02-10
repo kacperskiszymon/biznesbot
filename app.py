@@ -251,6 +251,18 @@ def send_email_notification(subject, message, recipient):
         logging.error("Błąd przy wysyłaniu e-maila: %s", e)
         return False
 
+def log_interaction(user_input, bot_response):
+    """Funkcja zapisująca interakcję do pliku CSV"""
+    try:
+        with open("chat_logs.csv", mode="a", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            # Jeśli plik jest pusty, zapisz nagłówki
+            if file.tell() == 0:
+                writer.writerow(["Data i godzina", "Pytanie użytkownika", "Odpowiedź bota"])
+            writer.writerow([datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_input, bot_response])
+    except Exception as e:
+        logging.error("Błąd podczas zapisywania logu: %s", e)
+
 @app.route("/")
 def index():
     return render_template("index.html")
